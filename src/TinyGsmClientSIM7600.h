@@ -9,6 +9,7 @@
 #ifndef SRC_TINYGSMCLIENTSIM7600_H_
 #define SRC_TINYGSMCLIENTSIM7600_H_
 
+
 // #define TINY_GSM_DEBUG Serial
 // #define TINY_GSM_USE_HEX
 
@@ -276,6 +277,24 @@ class TinyGsmSim7600 : public TinyGsmModem<TinyGsmSim7600>,
     String res = stream.readStringUntil('\n');
     waitResponse();
     return res;
+  }
+
+  String getNetworkSystemMode(){
+    sendAT(GF("+CNSMOD?"));
+    if (waitResponse(GF(GSM_NL "+CNSMOD:")) != 1){ return "";}
+    String res = stream.readStringUntil('\n');
+    int nsm = res.substring(res.indexOf(",")+1,res.indexOf(",")+2).toInt();
+    waitResponse();
+    switch(nsm){
+      case 0: return "No Service";
+      case 1: return "GSM";
+      case 2: return "GPRS";
+      case 3: return "EGPRS";
+      case 4 ... 7: return "3G";
+      case 8: return "4G/LTE";
+      default: return "Other";
+    }
+    return "";
   }
 
   int16_t getNetworkMode() {
